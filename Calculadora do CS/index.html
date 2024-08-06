@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calculadora de Diferença de Saldo</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f9;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+        .container {
+            background-color: #ffffff;
+            padding: 20px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+            width: 100%;
+            max-width: 800px;
+            box-sizing: border-box;
+            overflow-y: auto;
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 20px;
+        }
+        .input-group {
+            margin-bottom: 20px;
+        }
+        .input-group label {
+            display: block;
+            margin-bottom: 5px;
+            color: #555;
+        }
+        .input-group input,
+        .input-group textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        .input-group textarea {
+            height: 100px;
+        }
+        button {
+            width: 100%;
+            padding: 15px;
+            background-color: #007BFF;
+            color: #FFF;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            margin-bottom: 10px;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        .result {
+            margin-top: 20px;
+            font-size: 1.2em;
+            font-weight: bold;
+            text-align: center;
+            color: #333;
+        }
+        ul {
+            list-style-type: none;
+            padding: 0;
+            margin: 0;
+        }
+        li {
+            background-color: #f9f9f9;
+            margin-bottom: 10px;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            color: #555;
+            display: flex;
+            justify-content: space-between;
+        }
+        .li-data {
+            color: #999;
+            flex: 1;
+        }
+        .li-valor {
+            color: #000;
+            flex: 1;
+            text-align: center;
+        }
+        .li-status {
+            flex: 1;
+            text-align: right;
+        }
+        .status-sucesso {
+            color: green;
+        }
+        .status-falha {
+            color: red;
+        }
+        .status-processando {
+            color: orange;
+        }
+        .dropdown {
+            margin-bottom: 20px;
+        }
+        .dropdown-content {
+            display: none;
+            overflow-y: auto;
+            max-height: 200px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            padding: 10px;
+        }
+        .row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+        .column {
+            flex: 1;
+            min-width: 280px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container" id="content" style="display:none;">
+        <h1>Calculadora de Diferença de Saldo</h1>
+        <div class="row">
+            <div class="column">
+                <div class="input-group">
+                    <label for="totalRecebido">Valor Total Líquido Recebido (T):</label>
+                    <input type="number" id="totalRecebido" step="0.01">
+                </div>
+                <div class="input-group">
+                    <label for="painel1Disponivel">Valor Disponível no Painel 1 (v1):</label>
+                    <input type="number" id="painel1Disponivel" step="0.01">
+                </div>
+                <div class="input-group">
+                    <label for="painel2Disponivel">Valor Disponível no Painel 2 (v2):</label>
+                    <input type="number" id="painel2Disponivel" step="0.01">
+                </div>
+                <div class="input-group">
+                    <label for="painel1Pendente">Saldo Pendente no Painel 1 (p1):</label>
+                    <input type="number" id="painel1Pendente" step="0.01">
+                </div>
+                <div class="input-group">
+                    <label for="painel2Pendente">Saldo Pendente no Painel 2 (p2):</label>
+                    <input type="number" id="painel2Pendente" step="0.01">
+                </div>
+            </div>
+            <div class="column">
+                <div class="input-group">
+                    <label for="jsonInput">Adicionar Saques via JSON:</label>
+                    <textarea id="jsonInput" placeholder="Cole o JSON aqui"></textarea>
+                </div>
+                <button onclick="adicionarSaquesViaJSON()">Adicionar Saques</button>
+                <div class="dropdown">
+                    <button onclick="toggleDropdown()">Mostrar/Ocultar Saques</button>
+                    <div class="dropdown-content" id="listaSaquesContainer">
+                        <ul id="listaSaques"></ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <button onclick="calcularDiferenca()">Calcular Diferença de Saldo</button>
+        <div class="result" id="resultado"></div>
+    </div>
+
+    <script>
+        let saques = [];
+
+        function checkPassword() {
+            const password = prompt("Por favor, insira a senha:");
+            if (password === "Teste") {
+                document.getElementById('content').style.display = 'block';
+            } else {
+                alert("Senha incorreta. Acesso negado.");
+                checkPassword();
+            }
+        }
+
+        window.onload = checkPassword;
+
+        function adicionarSaquesViaJSON() {
+            const jsonInput = document.getElementById('jsonInput').value.trim();
+            try {
+                const data = JSON.parse(jsonInput);
+                const transfers = data.transfers;
+                
+                transfers.forEach(transfer => {
+                    const data = new Date(transfer.created_at).toLocaleDateString('pt-BR');
+                    const valor = transfer.amount / 100; // Assumindo que o valor é em centavos
+                    let status = transfer.status.toLowerCase();
+                    if (status === 'success') status = 'Sucesso';
+                    else if (status === 'failed') status = 'Falha';
+                    else if (status === 'processing') status = 'Processando';
+
+                    if (!isNaN(valor) && (status === 'Sucesso' || status === 'Falha' || status === 'Processando')) {
+                        saques.push({ data, valor, status });
+                    }
+                });
+
+                atualizarListaSaques();
+                document.getElementById('jsonInput').value = '';
+            } catch (error) {
+                alert('Erro ao processar o JSON. Verifique o formato e tente novamente.');
+            }
+        }
+
+        function atualizarListaSaques() {
+            const listaSaques = document.getElementById('listaSaques');
+            listaSaques.innerHTML = '';
+            saques.forEach((saque, index) => {
+                const li = document.createElement('li');
+
+                const liData = document.createElement('div');
+                liData.classList.add('li-data');
+                liData.textContent = saque.data;
+
+                const liValor = document.createElement('div');
+                liValor.classList.add('li-valor');
+                liValor.textContent = `R$ ${saque.valor.toFixed(2)}`;
+
+                const liStatus = document.createElement('div');
+                liStatus.classList.add('li-status');
+                if (saque.status === 'Sucesso') {
+                    liStatus.classList.add('status-sucesso');
+                } else if (saque.status === 'Falha') {
+                    liStatus.classList.add('status-falha');
+                } else if (saque.status === 'Processando') {
+                    liStatus.classList.add('status-processando');
+                }
+                liStatus.textContent = saque.status;
+
+                li.appendChild(liData);
+                li.appendChild(liValor);
+                li.appendChild(liStatus);
+
+                listaSaques.appendChild(li);
+            });
+        }
+
+        function calcularDiferenca() {
+            const T = parseFloat(document.getElementById('totalRecebido').value);
+            const v1 = parseFloat(document.getElementById('painel1Disponivel').value);
+            const v2 = parseFloat(document.getElementById('painel2Disponivel').value);
+            const p1 = parseFloat(document.getElementById('painel1Pendente').value);
+            const p2 = parseFloat(document.getElementById('painel2Pendente').value);
+
+            let totalSaques = 0;
+            saques.forEach(saque => {
+                if (saque.status === 'Sucesso' || saque.status === 'Processando') {
+                    totalSaques += saque.valor;
+                }
+                totalSaques += 3.67;  // Adiciona 3.67 para cada saque, independente do status
+            });
+
+            const totalDisponivel = v1 + v2;
+            const totalPendente = p1 + p2;
+            const diferencaSaldo = totalDisponivel + totalPendente + totalSaques - T;
+
+            document.getElementById('resultado').innerText = `Diferença de Saldo: R$ ${diferencaSaldo.toFixed(2)}`;
+        }
+
+        function toggleDropdown() {
+            const listaSaquesContainer = document.getElementById('listaSaquesContainer');
+            if (listaSaquesContainer.style.display === "none" || listaSaquesContainer.style.display === "") {
+                listaSaquesContainer.style.display = "block";
+            } else {
+                listaSaquesContainer.style.display = "none";
+            }
+        }
+    </script>
+</body>
+</html>
