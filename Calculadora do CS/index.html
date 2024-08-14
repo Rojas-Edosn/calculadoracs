@@ -6,8 +6,8 @@
     <title>Calculadora de Diferença de Saldo</title>
     <style>
         body {
-            font-family: Arial, sans-serif;
-            background-color: #f4f4f9;
+            font-family: 'Roboto', sans-serif;
+            background-color: #e9ecef;
             margin: 0;
             padding: 0;
             display: flex;
@@ -18,57 +18,71 @@
         .container {
             background-color: #ffffff;
             padding: 20px;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-            border-radius: 8px;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+            border-radius: 10px;
             width: 100%;
             max-width: 800px;
             box-sizing: border-box;
             overflow-y: auto;
         }
+        .logo {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .logo img {
+            max-width: 200px; 
+            height: auto;
+        }
         h1 {
             text-align: center;
-            color: #333;
+            color: #343a40;
             margin-bottom: 20px;
+            font-size: 24px;
         }
         .input-group {
             margin-bottom: 20px;
         }
         .input-group label {
             display: block;
-            margin-bottom: 5px;
-            color: #555;
+            margin-bottom: 8px;
+            color: #495057;
+            font-weight: bold;
         }
         .input-group input,
         .input-group textarea {
             width: 100%;
-            padding: 10px;
-            border: 1px solid #ccc;
+            padding: 12px;
+            border: 1px solid #ced4da;
             border-radius: 4px;
             box-sizing: border-box;
+            font-size: 16px;
+            color: #495057;
+            background-color: #f8f9fa;
         }
         .input-group textarea {
-            height: 100px;
+            height: 120px;
         }
         button {
             width: 100%;
             padding: 15px;
-            background-color: #007BFF;
+            background-color: #28a745;
             color: #FFF;
             border: none;
             border-radius: 4px;
             cursor: pointer;
             font-size: 16px;
             margin-bottom: 10px;
+            transition: background-color 0.3s ease;
         }
         button:hover {
-            background-color: #0056b3;
+            background-color: #218838;
         }
         .result {
             margin-top: 20px;
-            font-size: 1.2em;
+            font-size: 1.4em;
             font-weight: bold;
             text-align: center;
-            color: #333;
+            color: #343a40;
         }
         ul {
             list-style-type: none;
@@ -76,21 +90,22 @@
             margin: 0;
         }
         li {
-            background-color: #f9f9f9;
+            background-color: #f8f9fa;
             margin-bottom: 10px;
-            padding: 10px;
-            border: 1px solid #ddd;
+            padding: 12px;
+            border: 1px solid #ced4da;
             border-radius: 4px;
-            color: #555;
+            color: #495057;
             display: flex;
             justify-content: space-between;
+            align-items: center;
         }
         .li-data {
-            color: #999;
+            color: #6c757d;
             flex: 1;
         }
         .li-valor {
-            color: #000;
+            color: #343a40;
             flex: 1;
             text-align: center;
         }
@@ -99,24 +114,28 @@
             text-align: right;
         }
         .status-sucesso {
-            color: green;
+            color: #28a745;
         }
         .status-falha {
-            color: red;
+            color: #dc3545;
         }
         .status-processando {
-            color: orange;
+            color: #ffc107;
         }
         .dropdown {
             margin-bottom: 20px;
+        }
+        .dropdown button {
+            background-color: #007bff;
         }
         .dropdown-content {
             display: none;
             overflow-y: auto;
             max-height: 200px;
-            border: 1px solid #ddd;
+            border: 1px solid #ced4da;
             border-radius: 4px;
             padding: 10px;
+            background-color: #f8f9fa;
         }
         .row {
             display: flex;
@@ -125,34 +144,36 @@
         }
         .column {
             flex: 1;
-            min-width: 280px;
+            min-width: 300px;
         }
     </style>
 </head>
 <body>
-   <body>
     <div class="container" id="content" style="display:none;">
+        <div class="logo">
+            <img src="logo.png" alt="Logo">
+        </div>
         <h1>Calculadora de Diferença de Saldo</h1>
         <div class="row">
             <div class="column">
                 <div class="input-group">
-                    <label for="totalRecebido">Valor Total Líquido Recebido (T):</label>
+                    <label for="totalRecebido">Valor Total Líquido Recebido:</label>
                     <input type="text" id="totalRecebido" oninput="formatarMoeda(this)">
                 </div>
                 <div class="input-group">
-                    <label for="painel1Disponivel">Valor Disponível no Painel 1 (v1):</label>
+                    <label for="painel1Disponivel">Valor Disponível no V1:</label>
                     <input type="text" id="painel1Disponivel" oninput="formatarMoeda(this)">
                 </div>
                 <div class="input-group">
-                    <label for="painel2Disponivel">Valor Disponível no Painel 2 (v2):</label>
+                    <label for="painel2Disponivel">Valor Disponível no V2:</label>
                     <input type="text" id="painel2Disponivel" oninput="formatarMoeda(this)">
                 </div>
                 <div class="input-group">
-                    <label for="painel1Pendente">Saldo Pendente no Painel 1 (p1):</label>
+                    <label for="painel1Pendente">Saldo Pendente no V1:</label>
                     <input type="text" id="painel1Pendente" oninput="formatarMoeda(this)">
                 </div>
                 <div class="input-group">
-                    <label for="painel2Pendente">Saldo Pendente no Painel 2 (p2):</label>
+                    <label for="painel2Pendente">Saldo Pendente no V2:</label>
                     <input type="text" id="painel2Pendente" oninput="formatarMoeda(this)">
                 </div>
             </div>
