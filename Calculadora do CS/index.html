@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Calculadora de Diferença de Saldo</title>
+    <link rel="icon" href="icon.webp" type="image/x-icon">
     <style>
         body {
             font-family: 'Roboto', sans-serif;
@@ -14,7 +15,14 @@
             justify-content: center;
             align-items: center;
             height: 100vh;
+            transition: background-color 0.3s, color 0.3s;
         }
+
+        body.dark-mode {
+            background-color: #343a40;
+            color: #f8f9fa;
+        }
+
         .container {
             background-color: #ffffff;
             padding: 20px;
@@ -24,30 +32,48 @@
             max-width: 800px;
             box-sizing: border-box;
             overflow-y: auto;
+            transition: background-color 0.3s, color 0.3s;
         }
+
+        .container.dark-mode {
+            background-color: #495057;
+        }
+
         .logo {
             text-align: center;
             margin-bottom: 20px;
         }
+
         .logo img {
             max-width: 200px; 
             height: auto;
         }
+
         h1 {
             text-align: center;
             color: #343a40;
             margin-bottom: 20px;
             font-size: 24px;
+            transition: color 0.3s;
         }
+
+        body.dark-mode h1 {
+            color: #f8f9fa;
+        }
+
         .input-group {
             margin-bottom: 20px;
         }
+
         .input-group label {
-            display: block;
-            margin-bottom: 8px;
             color: #495057;
-            font-weight: bold;
+            transition: color 0.3s;
         }
+
+        body.dark-mode .input-group label {
+            color: #ced4da;
+        }
+
         .input-group input,
         .input-group textarea {
             width: 100%;
@@ -58,10 +84,16 @@
             font-size: 16px;
             color: #495057;
             background-color: #f8f9fa;
+            transition: background-color 0.3s, color 0.3s;
         }
-        .input-group textarea {
-            height: 120px;
+
+        body.dark-mode .input-group input,
+        body.dark-mode .input-group textarea {
+            background-color: #343a40;
+            color: #f8f9fa;
+            border: 1px solid #6c757d;
         }
+
         button {
             width: 100%;
             padding: 15px;
@@ -72,23 +104,36 @@
             cursor: pointer;
             font-size: 16px;
             margin-bottom: 10px;
-            transition: background-color 0.3s ease;
+            transition: background-color 0.3s, color 0.3s;
         }
+
         button:hover {
             background-color: #218838;
         }
+
+        body.dark-mode button {
+            background-color: #218838;
+        }
+
         .result {
             margin-top: 20px;
             font-size: 1.4em;
             font-weight: bold;
             text-align: center;
             color: #343a40;
+            transition: color 0.3s;
         }
+
+        body.dark-mode .result {
+            color: #f8f9fa;
+        }
+
         ul {
             list-style-type: none;
             padding: 0;
             margin: 0;
         }
+
         li {
             background-color: #f8f9fa;
             margin-bottom: 10px;
@@ -99,20 +144,15 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
+            transition: background-color 0.3s, color 0.3s;
         }
-        .li-data {
-            color: #6c757d;
-            flex: 1;
+
+        body.dark-mode li {
+            background-color: #343a40;
+            color: #f8f9fa;
+            border: 1px solid #6c757d;
         }
-        .li-valor {
-            color: #343a40;
-            flex: 1;
-            text-align: center;
-        }
-        .li-status {
-            flex: 1;
-            text-align: right;
-        }
+
         .status-sucesso {
             color: #28a745;
         }
@@ -122,12 +162,11 @@
         .status-processando {
             color: #ffc107;
         }
-        .dropdown {
-            margin-bottom: 20px;
-        }
+
         .dropdown button {
             background-color: #007bff;
         }
+
         .dropdown-content {
             display: none;
             overflow-y: auto;
@@ -137,18 +176,133 @@
             padding: 10px;
             background-color: #f8f9fa;
         }
+
         .row {
             display: flex;
             flex-wrap: wrap;
             gap: 20px;
         }
+
         .column {
             flex: 1;
             min-width: 300px;
         }
+
+        /* Dark Mode Toggle Switch */
+        .dark-mode-toggle {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            display: flex;
+            align-items: center;
+        }
+
+        .dark-mode-toggle label {
+            margin-right: 10px;
+            font-size: 16px;
+            color: #343a40;
+            transition: color 0.3s;
+        }
+
+        body.dark-mode .dark-mode-toggle label {
+            color: #f8f9fa;
+        }
+
+.toggle-switch {
+    position: relative;
+    width: 50px;
+    height: 25px;
+    cursor: pointer; /* Make sure the cursor changes when hovering over the switch */
+}
+
+.toggle-switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+    position: absolute;
+    left: 0;
+    top: 0;
+    cursor: pointer;
+}
+
+.slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: #ccc;
+    transition: 0.4s;
+    border-radius: 25px;
+}
+
+.slider:before {
+    position: absolute;
+    content: "";
+    height: 17px;
+    width: 17px;
+    left: 4px;
+    bottom: 4px;
+    background-color: white;
+    transition: 0.4s;
+    border-radius: 50%;
+}
+
+input:checked + .slider {
+    background-color: #2196F3;
+}
+
+input:checked + .slider:before {
+    transform: translateX(25px);
+}
+
+        footer {
+    margin-top: auto;
+    width: 100%;
+    text-align: center;
+    padding: 10px;
+    background-color: #f8f9fa;
+    box-sizing: border-box;
+    border-top: 1px solid #ced4da;
+    transition: background-color 0.3s, color 0.3s;
+}
+
+body.dark-mode footer {
+    background-color: #495057;
+    color: #f8f9fa;
+    border-top: 1px solid #6c757d;
+}
+        input:checked + .slider {
+            background-color: #2196F3;
+        }
+
+        input:checked + .slider:before {
+            transform: translateX(25px);
+        }
+        html, body {
+    height: 100%;
+}
+
+body {
+    display: flex;
+    flex-direction: column;
+}
+
+.container {
+    flex-grow: 1;
+}
     </style>
 </head>
 <body>
+    <div class="dark-mode-toggle">
+        <label for="darkModeSwitch">Dark Mode</label>
+        <div class="toggle-switch">
+            <input type="checkbox" id="darkModeSwitch">
+            <span class="slider"></span>
+        </div>
+    </div>
+    </div>
     <div class="container" id="content" style="display:none;">
         <div class="logo">
             <img src="logo.png" alt="Logo">
@@ -193,23 +347,48 @@
         </div>
         <button onclick="calcularDiferenca()">Calcular Diferença de Saldo</button>
         <div class="result" id="resultado"></div>
-    </div>
+    </div> <!-- Closing the main container div -->
+    
+    <footer class="container">
+        <small>
+            <a href="Google.com">Guia de uso - Calculadora</a> • 
+            <a href="instagram.com">Treinamento Calculadora</a> 
+        </small>
+    </footer>
 
     <script>
-            function formatarMoeda(campo) {
-            let valor = campo.value;
-            valor = valor.replace(/\D/g, "");
-            valor = (valor / 100).toFixed(2) + "";
-            valor = valor.replace(".", ",");
-            valor = valor.replace(/(\d)(?=(\d{3})+(?!\d))/g, "$1.");
-            campo.value = "R$ " + valor;
-        }
-
+function formatarMoeda(campo) {
+    let valor = campo.value;
+    
+    // Verifica se o valor é negativo
+    let isNegative = false;
+    if (valor.includes('-')) {
+        isNegative = true;
+    }
+    
+    // Remove todos os caracteres não numéricos
+    valor = valor.replace(/\D/g, "");
+    
+    // Formata o valor para incluir vírgula decimal
+    valor = (valor / 100).toFixed(2) + "";
+    valor = valor.replace(".", ",");
+    
+    // Adiciona pontos como separadores de milhar
+    valor = valor.replace(/(\d)(?=(\d{3})+(?!\d))/g, "$1.");
+    
+    // Adiciona o sinal de negativo se necessário
+    if (isNegative) {
+        valor = "-" + valor;
+    }
+    
+    // Adiciona o prefixo de moeda
+    campo.value = "R$ " + valor;
+}
+    
         function parseValor(valor) {
             return parseFloat(valor.replace("R$ ", "").replace(/\./g, "").replace(",", "."));
         }
-
-
+    
         let saques = [];
     
         function checkPassword() {
@@ -229,7 +408,7 @@
             try {
                 const data = JSON.parse(jsonInput);
                 const transfers = data.transfers;
-                
+    
                 transfers.forEach(transfer => {
                     const data = new Date(transfer.created_at).toLocaleDateString('pt-BR');
                     const valor = transfer.amount / 100; // Assumindo que o valor é em centavos
@@ -302,10 +481,25 @@
     const totalPendente = p1 + p2;
     const diferencaSaldo = totalDisponivel + totalPendente + totalSaques - T;
 
+    const resultadoElement = document.getElementById('resultado');
+
     if (!isNaN(diferencaSaldo)) {
-        document.getElementById('resultado').innerText = `Diferença de Saldo: ${diferencaSaldo.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}`;
+        resultadoElement.innerText = `Diferença de Saldo: ${diferencaSaldo.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}`;
+        
+        // Define a cor de fundo baseada no valor
+        if (diferencaSaldo < 0) {
+            resultadoElement.style.backgroundColor = "red";
+            resultadoElement.style.color = "white"; // Mudar a cor do texto para maior contraste
+        } else if (diferencaSaldo === 0) {
+            resultadoElement.style.backgroundColor = "green";
+            resultadoElement.style.color = "white";
+        } else {
+            resultadoElement.style.backgroundColor = "blue";
+            resultadoElement.style.color = "white";
+        }
     } else {
-        document.getElementById('resultado').innerText = 'Erro: Verifique os valores inseridos.';
+        resultadoElement.innerText = 'Erro: Verifique os valores inseridos.';
+        resultadoElement.style.backgroundColor = ""; // Remove a cor de fundo caso haja um erro
     }
 }
     
@@ -317,6 +511,13 @@
                 listaSaquesContainer.style.display = "none";
             }
         }
-    </script>    
-</body>
-</html>
+    
+        document.getElementById('darkModeSwitch').addEventListener('change', function () {
+    document.body.classList.toggle('dark-mode');
+    document.querySelectorAll('.container').forEach(container => {
+        container.classList.toggle('dark-mode');
+    });
+});
+    </script> 
+    </body>
+    </html>    
