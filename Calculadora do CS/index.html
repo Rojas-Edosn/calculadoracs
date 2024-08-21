@@ -297,11 +297,10 @@ body {
 <body>
     <div class="dark-mode-toggle">
         <label for="darkModeSwitch">Dark Mode</label>
-        <div class="toggle-switch">
+        <label class="toggle-switch">
             <input type="checkbox" id="darkModeSwitch">
             <span class="slider"></span>
-        </div>
-    </div>
+        </label>
     </div>
     <div class="container" id="content" style="display:none;">
         <div class="logo">
@@ -335,6 +334,10 @@ body {
                 <div class="input-group">
                     <label for="jsonInput">Adicionar Saques via JSON:</label>
                     <textarea id="jsonInput" placeholder="Cole o JSON aqui"></textarea>
+                    <div class="input-group">
+                        <label for="saquesBradesco">Saques Bradesco:</label>
+                        <input type="number" id="saquesBradesco" min="0" value="0">
+                    </div>
                 </div>
                 <button onclick="adicionarSaquesViaJSON()">Adicionar Saques</button>
                 <div class="dropdown">
@@ -351,8 +354,7 @@ body {
     
     <footer class="container">
         <small>
-            <a href="Google.com">Guia de uso - Calculadora</a> • 
-            <a href="instagram.com">Treinamento Calculadora</a> 
+            <a href="https://www.notion.so/kiwify/Treinamento-Calculadora-CS-V2-60492195d6174bd9ac6eb86d07614282?pvs=4">Treinamento Calculadora V2</a> 
         </small>
     </footer>
 
@@ -386,14 +388,18 @@ function formatarMoeda(campo) {
 }
     
         function parseValor(valor) {
-            return parseFloat(valor.replace("R$ ", "").replace(/\./g, "").replace(",", "."));
-        }
+        if (!valor || valor.trim() === "") {
+        return 0;
+    }
+    return parseFloat(valor.replace("R$ ", "").replace(/\./g, "").replace(",", "."));
+}
+
     
         let saques = [];
     
         function checkPassword() {
             const password = prompt("Por favor, insira a senha:");
-            if (password === "Teste") {
+            if (password === "calculadora") {
                 document.getElementById('content').style.display = 'block';
             } else {
                 alert("Senha incorreta. Acesso negado.");
@@ -404,30 +410,33 @@ function formatarMoeda(campo) {
         window.onload = checkPassword;
     
         function adicionarSaquesViaJSON() {
-            const jsonInput = document.getElementById('jsonInput').value.trim();
-            try {
-                const data = JSON.parse(jsonInput);
-                const transfers = data.transfers;
-    
-                transfers.forEach(transfer => {
-                    const data = new Date(transfer.created_at).toLocaleDateString('pt-BR');
-                    const valor = transfer.amount / 100; // Assumindo que o valor é em centavos
-                    let status = transfer.status.toLowerCase();
-                    if (status === 'success') status = 'Sucesso';
-                    else if (status === 'failed') status = 'Falha';
-                    else if (status === 'processing') status = 'Processando';
-    
-                    if (!isNaN(valor) && (status === 'Sucesso' || status === 'Falha' || status === 'Processando')) {
-                        saques.push({ data, valor, status });
-                    }
-                });
-    
-                atualizarListaSaques();
-                document.getElementById('jsonInput').value = '';
-            } catch (error) {
-                alert('Erro ao processar o JSON. Verifique o formato e tente novamente.');
+    const jsonInput = document.getElementById('jsonInput').value.trim();
+    try {
+        const data = JSON.parse(jsonInput);
+        const transfers = data.transfers;
+
+        transfers.forEach(transfer => {
+            const data = new Date(transfer.created_at).toLocaleDateString('pt-BR');
+            const valor = transfer.amount / 100; // Assuming the value is in cents
+            let status = transfer.status.toLowerCase();
+
+            // Map "transferred" to "Sucesso"
+            if (status === 'success' || status === 'transferred') status = 'Sucesso';
+            else if (status === 'failed') status = 'Falha';
+            else if (status === 'processing') status = 'Processando';
+
+            if (!isNaN(valor) && (status === 'Sucesso' || status === 'Falha' || status === 'Processando')) {
+                saques.push({ data, valor, status });
             }
-        }
+        });
+
+        atualizarListaSaques();
+        document.getElementById('jsonInput').value = '';
+    } catch (error) {
+        alert('Erro ao processar o JSON. Verifique o formato e tente novamente.');
+    }
+}
+
     
         function atualizarListaSaques() {
             const listaSaques = document.getElementById('listaSaques');
@@ -462,34 +471,35 @@ function formatarMoeda(campo) {
             });
         }
     
-        function calcularDiferenca() {
-    const T = parseValor(document.getElementById('totalRecebido').value);
-    const v1 = parseValor(document.getElementById('painel1Disponivel').value);
-    const v2 = parseValor(document.getElementById('painel2Disponivel').value);
-    const p1 = parseValor(document.getElementById('painel1Pendente').value);
-    const p2 = parseValor(document.getElementById('painel2Pendente').value);
+    function calcularDiferenca() {
+        const T = parseValor(document.getElementById('totalRecebido').value);
+        const v1 = parseValor(document.getElementById('painel1Disponivel').value);
+        const v2 = parseValor(document.getElementById('painel2Disponivel').value);
+        const p1 = parseValor(document.getElementById('painel1Pendente').value);
+        const p2 = parseValor(document.getElementById('painel2Pendente').value);
+        const saquesBradesco = parseInt(document.getElementById('saquesBradesco').value) || 0; // Default to 0 if not set
 
     let totalSaques = 0;
     saques.forEach(saque => {
         if (saque.status === 'Sucesso' || saque.status === 'Processando') {
             totalSaques += saque.valor;
         }
-        totalSaques += 3.67;  // Adiciona 3.67 para cada saque, independente do status
+        totalSaques += 3.67;  // Add 3.67 for each saque
     });
 
     const totalDisponivel = v1 + v2;
     const totalPendente = p1 + p2;
-    const diferencaSaldo = totalDisponivel + totalPendente + totalSaques - T;
+    const diferencaSaldo = totalDisponivel + totalPendente + totalSaques - T - (saquesBradesco * 3.67);
 
     const resultadoElement = document.getElementById('resultado');
 
     if (!isNaN(diferencaSaldo)) {
         resultadoElement.innerText = `Diferença de Saldo: ${diferencaSaldo.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}`;
         
-        // Define a cor de fundo baseada no valor
+        // Set the background color based on the value
         if (diferencaSaldo < 0) {
             resultadoElement.style.backgroundColor = "red";
-            resultadoElement.style.color = "white"; // Mudar a cor do texto para maior contraste
+            resultadoElement.style.color = "white"; 
         } else if (diferencaSaldo === 0) {
             resultadoElement.style.backgroundColor = "green";
             resultadoElement.style.color = "white";
@@ -499,7 +509,7 @@ function formatarMoeda(campo) {
         }
     } else {
         resultadoElement.innerText = 'Erro: Verifique os valores inseridos.';
-        resultadoElement.style.backgroundColor = ""; // Remove a cor de fundo caso haja um erro
+        resultadoElement.style.backgroundColor = ""; // Remove the background color in case of an error
     }
 }
     
